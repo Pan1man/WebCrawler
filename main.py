@@ -1,2 +1,1 @@
-def test():
-    print('fddfs')
+from fastapi import FastAPI
