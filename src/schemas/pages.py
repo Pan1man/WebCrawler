@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from datetime import date
 
 
-class WebPageBase(BaseModel):
+class PageBase(BaseModel):
     url: str
     title: str
     description: str

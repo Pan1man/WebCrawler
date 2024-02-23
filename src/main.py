@@ -1,10 +1,12 @@
 import uvicorn
 from fastapi import FastAPI
-from src.api.routers import router as page_router
+from src.api.routers import all_routers
 
 
 app = FastAPI()
-app.include_router(page_router)
+
+for router in all_routers:
+    app.include_router(router)
 
 
 if __name__ == '__main__':
