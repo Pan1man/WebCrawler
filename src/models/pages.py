@@ -1,12 +1,14 @@
 import datetime
 
-from sqlalchemy import Column, VARCHAR, TEXT, DATE
-from src.db.db import Base
+from sqlalchemy import Column, VARCHAR, TEXT, DATE, MetaData
+from sqlalchemy.orm import declarative_base
 
+
+metadata = MetaData()
+Base = declarative_base(metadata=metadata)
 
 class Page(Base):
     __tablename__ = "pages"
-
     url = Column(VARCHAR, primary_key=True)
     title = Column(VARCHAR)
     description = Column(TEXT)
