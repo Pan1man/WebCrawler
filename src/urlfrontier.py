@@ -1,5 +1,5 @@
 class Url:
-    def __init__(self, url: str, priority: int):
+    def __init__(self, url: str, priority: int = 5):
         self._url = url
         self._priority = priority
 
@@ -22,6 +22,9 @@ class Url:
 
 class Frontier:
 
+    def __call__(self):
+        return url_frontier
+
     def __init__(self):
         self.queue = []
 
@@ -38,8 +41,4 @@ class Frontier:
         return max_priority.url
 
 
-
-
-
-
-
+url_frontier = Frontier()
