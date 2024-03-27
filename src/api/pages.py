@@ -11,9 +11,10 @@ from src.schemas.pages import PageBase
 from pathlib import Path
 
 
-from src.urlfrontier import Url, url_frontier
-from src.parser import Parser
+from src.urlfrontier import url_frontier
+from src.parser import Fetcher
 from src.urlfrontier import Frontier
+
 
 router = APIRouter()
 
@@ -28,9 +29,8 @@ async def get_main_template(request: Request):
 
 @router.post("/submit")
 async def submit_form(url: str = Form(...), frontier: Frontier = Depends(url_frontier)):
-    new_url = Url(url)
-    frontier.add_url(new_url)
-    content = await Parser.fetch(frontier)
+    frontier.add_url(url)
+    content = await Fetcher.fetch(frontier)
     return content
 
 @router.get("/pages")

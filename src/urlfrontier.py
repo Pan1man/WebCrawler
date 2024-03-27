@@ -19,6 +19,7 @@ class Url:
     def priority(self, value: int):
         self._priority = value
 
+url2 = Url("https://www.example.com/")
 
 class Frontier:
 
@@ -28,8 +29,15 @@ class Frontier:
     def __init__(self):
         self.queue = []
 
-    def add_url(self, url: Url):
-        self.queue.append(url)
+    def len(self):
+        if not self.queue:
+            return 0
+        else:
+            return len(self.queue)
+
+    def add_url(self, url: str):
+        formed_url = Url(url)
+        self.queue.append(formed_url)
 
     def remove_url(self) -> str:
         max_priority = self.queue[0]
