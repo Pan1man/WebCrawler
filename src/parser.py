@@ -1,23 +1,58 @@
 from bs4 import BeautifulSoup
+from sqlalchemy.ext.asyncio import AsyncSession
+from typing_extensions import AsyncGenerator
 
 from src.urlfrontier import Frontier, url_frontier
 from urllib.parse import urljoin, unquote
 import aiohttp
+import re
+
+
+class SessionMaker:
+    root_domains = []
+
+    @staticmethod
+    def is_same_root(url) -> str | None:
+        r = re.compile(r'.*\.([^.]*[^0-9][^.]*\.[^.]*[^.0-9][^.]*$)')
+        root_domain = r.sub(r'\1', url)
+        if root_domain not in SessionMaker.root_domains:
+            SessionMaker.root_domains.append(root_domain)
+            return None
+        else:
+            return root_domain
+
+    async def get_aiohttp_session(self, url):
+        if not self.is_same_root(url):
+            async with aiohttp.ClientSession() as session:
+                try:
+                    yield session
+                finally:
+                    await session.close()
+                    SessionMaker.root_domains.remove(SessionMaker.is_same_root(url))
 
 
 class Fetcher:
+    session_maker = SessionMaker()
+
     @staticmethod
     async def fetch(frontier: Frontier = url_frontier):
-        while frontier.len() != 0:
-            base_url = frontier.remove_url()
-            async with aiohttp.ClientSession() as session:
-                async with session.get(base_url) as response:
-                    page_text = await response.text()
-            url_for_frontier = UrlExtractor.extract_url(page_text, base_url)
-            for j in url_for_frontier:
-                frontier.add_url(j)
-            TextExtractor.extract_text(page_text)
-            print(base_url + "Спаршено")
+        try:
+            while frontier.len() != 0:
+                url = frontier.remove_url()
+                async for session in Fetcher.session_maker.get_aiohttp_session(url):
+                    async with session.get(url) as response:
+                        page_text = await response.text()
+                    url_for_frontier = UrlExtractor.extract_url(page_text, url)
+                    for j in url_for_frontier:
+                        frontier.add_url(j)
+                    TextExtractor.extract_text(page_text)
+                    print(url + "Спаршено")
+
+        except Exception as e:
+            print("какая я хуйня ", e)
+
+        finally:
+            await Fetcher.fetch(frontier)
 
 
 class UrlExtractor:

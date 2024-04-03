@@ -46,3 +46,4 @@ async def add_page(page: PageBase, session: AsyncSession = Depends(get_async_ses
     stmt = insert(Page).values(**page.dict())
     await session.execute(stmt)
     await session.commit()
+
