@@ -12,7 +12,6 @@ from pathlib import Path
 
 
 from src.urlfrontier import url_frontier
-from src.parser import Fetcher
 from src.urlfrontier import Frontier
 
 
@@ -29,9 +28,13 @@ async def get_main_template(request: Request):
 
 @router.post("/submit")
 async def submit_form(url: str = Form(...), frontier: Frontier = Depends(url_frontier)):
-    frontier.add_url(url)
-    content = await Fetcher.fetch(frontier)
-    return content
+    try:
+        frontier.add_url(url)
+        return "Успешно добавлено"
+    except Exception as e:
+        return "Ошибка"
+
+
 
 @router.get("/pages")
 async def get_pages(session: AsyncSession = Depends(get_async_session)):
