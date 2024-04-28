@@ -26,3 +26,5 @@ if __name__ == '__main__':
     parsing_thread = threading.Thread(target=run_parsing)
     parsing_thread.start()
     start_server()
+    parsing_thread.join()
+
