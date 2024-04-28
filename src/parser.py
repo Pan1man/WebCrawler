@@ -12,18 +12,19 @@ import aiohttp
 class Fetcher:
     @staticmethod
     async def fetch(frontier: Frontier):
-        try:
-            url = frontier.remove_url()
-            async with aiohttp.ClientSession() as session:
-                response = await session.get(url)
-                page_body = await response.text()
-                url_for_frontier = UrlExtractor.extract_url(page_body, url)
-                for j in url_for_frontier:
-                    frontier.add_url(j)
-                TextEditor.extract_text(page_body)
-            print(url + "Спаршено")
-        except Exception as e:
-            print(e)
+        while frontier.len() != 0:
+            try:
+                url = frontier.remove_url()
+                async with aiohttp.ClientSession() as session:
+                    response = await session.get(url)
+                    page_body = await response.text()
+                    url_for_frontier = UrlExtractor.extract_url(page_body, url)
+                    for j in url_for_frontier:
+                        frontier.add_url(j)
+                    TextEditor.extract_text(page_body)
+                print(url + "Спаршено")
+            except Exception as e:
+                print(e)
 
 
 
