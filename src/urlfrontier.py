@@ -50,4 +50,3 @@ class Frontier:
 
 url_frontier = Frontier()
 
-git
