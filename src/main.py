@@ -1,9 +1,6 @@
-import threading
-import asyncio
 import uvicorn
 from fastapi import FastAPI
 from src.api.routers import all_routers
-from src.urlfrontier import url_frontier
 from src.parser import Fetcher
 
 app = FastAPI()

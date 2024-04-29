@@ -50,5 +50,4 @@ class Frontier:
 
 url_frontier = Frontier()
 
-#url_frontier.add_url("https://www.iana.org/help/example-domains")
-#url_frontier.add_url("https://www.rfc-editor.org/rfc/rfc2606.html")
+git
