@@ -39,13 +39,13 @@ async def submit_form(request: Request, url: str = Form(...), frontier: Frontier
 
 
 @router.get("/start_parsing")
-async def start_parsing(frontier: Frontier = Depends(url_frontier)):
+async def start_parsing(frontier: Frontier = Depends(url_frontier), session: AsyncSession = Depends(get_async_session)):
     global current_parsing_task
 
     if current_parsing_task and not current_parsing_task.done():
         return "Парсинг уже запущен. Невозможно запустить парсинг повторно."
 
-    current_parsing_task = asyncio.create_task(Fetcher.fetch(frontier))
+    current_parsing_task = asyncio.create_task(Fetcher.fetch(frontier, session))
     return "Парсинг начат."
 
 
