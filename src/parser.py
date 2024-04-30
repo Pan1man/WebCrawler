@@ -1,17 +1,19 @@
 from bs4 import BeautifulSoup
+
 from typing_extensions import Generator
 
+from src.schemas.pages import PageBase
 from src.urlfrontier import Frontier
 from urllib.parse import urljoin, unquote
 import aiohttp
 
+from src.texteditor import EntryCreation, TextEditor
 
-
-
+from models.pages import Page
 
 class Fetcher:
     @staticmethod
-    async def fetch(frontier: Frontier):
+    async def fetch(frontier: Frontier, db_session):
         while frontier.len() != 0:
             try:
                 url = frontier.remove_url()
@@ -21,11 +23,12 @@ class Fetcher:
                     url_for_frontier = UrlExtractor.extract_url(page_body, url)
                     for j in url_for_frontier:
                         frontier.add_url(j)
-                    TextEditor.extract_text(page_body)
+                    text_editor = TextEditor()
+                    page = Page(url, TextEditor.compile_title(page_body), text_editor.compile_description(page_body), text_editor.compile_tags(page_body))
+                    await EntryCreation.create_entry(page, db_session)
                 print(url + "Спаршено")
             except Exception as e:
                 print(e)
-
 
 
 class UrlExtractor:
@@ -52,10 +55,3 @@ class UrlExtractor:
                 yield absolute_url
 
 
-class TextEditor:
-    @staticmethod
-    def extract_text(page_text):
-        soup = BeautifulSoup(page_text, 'html.parser')
-        text = soup.get_text(strip=True)
-        return text
-    
