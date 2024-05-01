@@ -52,8 +52,4 @@ class Frontier:
 
 
 url_frontier = Frontier()
-<<<<<<< HEAD
-url_frontier.add_url("https://www.example.com/")
-=======
 
->>>>>>> main
