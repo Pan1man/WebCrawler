@@ -19,10 +19,7 @@ class Url:
     def priority(self, value: int):
         self._priority = value
 
-<<<<<<< HEAD
-=======
 
->>>>>>> main
 class Frontier:
 
     def __call__(self):
