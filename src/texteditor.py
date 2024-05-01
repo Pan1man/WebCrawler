@@ -1,18 +1,29 @@
-from src.models.pages import Page
-
+import nltk
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 from src.db.db import get_async_session
 from src.schemas.pages import PageBase
 
-from fastapi import Depends
-from sqlalchemy import insert
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from bs4 import BeautifulSoup
 
-
+from nltk.corpus import stopwords
 class TextEditor:
+
+    def compile_tags(self, text, n_keywords=5):
+        stop_words = set(stopwords.words('russian'))
+
+        extracted_text = self.extract_text(text)
+
+        stop_words_list = list(stop_words)
+        tfidf_vectorizer = TfidfVectorizer(stop_words=stop_words_list)
+        tfidf_matrix = tfidf_vectorizer.fit_transform([extracted_text])
+
+        feature_names = tfidf_vectorizer.get_feature_names_out()
+        sorted_indices = tfidf_matrix.toarray().argsort()[0][::-1]
+
+        keywords = [feature_names[idx] for idx in sorted_indices if feature_names[idx] not in stop_words_list][
+                   :n_keywords]
+        return keywords
 
     def extract_text(self, page_text):
         soup = BeautifulSoup(page_text, 'html.parser')
@@ -22,15 +33,6 @@ class TextEditor:
     def compile_description(self, text):
         extracted_text = self.extract_text(text)
         return "Какое то описание"
-
-    def compile_tags(self, text, n_keywords=5):
-        extracted_text = self.extract_text(text)
-        tfidf_vectorizer = TfidfVectorizer()
-        tfidf_matrix = tfidf_vectorizer.fit_transform([extracted_text])
-        feature_names = tfidf_vectorizer.get_feature_names_out()
-        sorted_indices = tfidf_matrix.toarray().argsort()[0][::-1]
-        keywords = [feature_names[idx] for idx in sorted_indices[:n_keywords]]
-        return keywords
 
     @staticmethod
     def compile_title(page_text):

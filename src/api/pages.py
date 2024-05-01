@@ -50,11 +50,12 @@ async def start_parsing(frontier: Frontier = Depends(url_frontier), session: Asy
 
 
 @router.get("/end_parsing")
-async def end_parsing():
+async def end_parsing(session: AsyncSession = Depends(get_async_session)):
     global current_parsing_task
 
     if current_parsing_task and not current_parsing_task.done():
         current_parsing_task.cancel()
+        await session.close()
         return "Парсинг остановлен."
 
     return "Парсинг не запущен. Нет действий для завершения."

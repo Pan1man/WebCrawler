@@ -58,31 +58,8 @@ class UrlExtractor:
 
 
 
-class Text:
-    def __init__(self, page_text):
-        self.page_text = page_text
-        self.key_words = None
-        self.extract_text(page_text)
 
 
 
-    def extract_text(self, page_text):
-        soup = BeautifulSoup(page_text, 'html.parser')
-        text = soup.get_text(strip=True)
-        self.find_key_words(text)
-
-    def find_key_words(self, text):
-        #Логика извлечения ключевых слов
-
-        self.key_words = []
-
-
-
-class TextExtractor:
-    @staticmethod
-    def extract_text(page_text):
-        soup = BeautifulSoup(page_text, 'html.parser')
-        text = soup.get_text(strip=True)
-        return text
 
 
