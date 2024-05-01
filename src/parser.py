@@ -1,62 +1,40 @@
 from bs4 import BeautifulSoup
-from sqlalchemy.ext.asyncio import AsyncSession
-from typing_extensions import AsyncGenerator
 
-from src.urlfrontier import Frontier, url_frontier
+from typing_extensions import Generator
+
+from src.schemas.pages import PageBase
+from src.urlfrontier import Frontier
 from urllib.parse import urljoin, unquote
 import aiohttp
-import re
 
+from src.texteditor import EntryCreation, TextEditor
 
-class SessionMaker:
-    root_domains = []
-
-    @staticmethod
-    def is_same_root(url) -> str | None:
-        r = re.compile(r'.*\.([^.]*[^0-9][^.]*\.[^.]*[^.0-9][^.]*$)')
-        root_domain = r.sub(r'\1', url)
-        if root_domain not in SessionMaker.root_domains:
-            SessionMaker.root_domains.append(root_domain)
-            return None
-        else:
-            return root_domain
-
-    async def get_aiohttp_session(self, url):
-        if not self.is_same_root(url):
-            async with aiohttp.ClientSession() as session:
-                try:
-                    yield session
-                finally:
-                    await session.close()
-                    SessionMaker.root_domains.remove(SessionMaker.is_same_root(url))
-
+from models.pages import Page
 
 class Fetcher:
-    session_maker = SessionMaker()
-
     @staticmethod
-    async def fetch(frontier: Frontier = url_frontier):
-        try:
-            while frontier.len() != 0:
+    async def fetch(frontier: Frontier, db_session):
+        while frontier.len() != 0:
+            try:
                 url = frontier.remove_url()
-                async for session in Fetcher.session_maker.get_aiohttp_session(url):
-                    async with session.get(url) as response:
-                        page_text = await response.text()
-                    url_for_frontier = UrlExtractor.extract_url(page_text, url)
+                async with aiohttp.ClientSession() as session:
+                    response = await session.get(url)
+                    page_body = await response.text()
+                    url_for_frontier = UrlExtractor.extract_url(page_body, url)
                     for j in url_for_frontier:
                         frontier.add_url(j)
-                    text = Text()
-                    print(url + "Спаршено")
+                    text_editor = TextEditor()
+                    page = Page(url, TextEditor.compile_title(page_body), text_editor.compile_description(page_body), text_editor.compile_tags(page_body))
+                    await EntryCreation.create_entry(page, db_session)
+                print(url + "Спаршено")
+            except Exception as e:
+                print(e)
 
-        except Exception as e:
-            print("какая я хуйня ", e)
-        finally:
-            await Fetcher.fetch(frontier)
 
 
 class UrlExtractor:
     @staticmethod
-    def extract_url(page_text: str, base_url):
+    def extract_url(page_text: str, base_url) -> Generator:
         soup = BeautifulSoup(page_text, 'lxml')
         ugly_urls = []
         for link in soup.find_all('a'):
@@ -76,6 +54,7 @@ class UrlExtractor:
                 else:
                     absolute_url = url
                 yield absolute_url
+
 
 
 

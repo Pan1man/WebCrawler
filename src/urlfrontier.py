@@ -19,6 +19,10 @@ class Url:
     def priority(self, value: int):
         self._priority = value
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
 class Frontier:
 
     def __call__(self):
@@ -48,4 +52,8 @@ class Frontier:
 
 
 url_frontier = Frontier()
+<<<<<<< HEAD
 url_frontier.add_url("https://www.example.com/")
+=======
+
+>>>>>>> main
