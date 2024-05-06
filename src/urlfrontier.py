@@ -35,7 +35,7 @@ class Frontier:
             return len(self.queue)
 
     def add_url(self, url: str):
-        formed_url = Url(url)
+        formed_url = Url(url, priority=10)
         self.queue.append(formed_url)
 
     def remove_url(self) -> str:

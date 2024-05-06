@@ -1,5 +1,4 @@
 from typing import AsyncGenerator
-
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
 DATABASE_URL = "postgresql+asyncpg://postgres:sa@localhost/gruzdle_db"
@@ -15,3 +14,6 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
             yield session
         finally:
             await session.close()
+
+
+

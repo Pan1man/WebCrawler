@@ -1,6 +1,9 @@
 from bs4 import BeautifulSoup
+from sqlalchemy import select
 
 from typing_extensions import Generator
+
+from src.db.db import get_async_session
 
 from src.schemas.pages import PageBase
 from src.urlfrontier import Frontier
@@ -8,8 +11,10 @@ from urllib.parse import urljoin, unquote
 import aiohttp
 
 from src.texteditor import EntryCreation, TextEditor
-
+from sqlalchemy.orm import Session
 from models.pages import Page
+
+from db.db import engine
 
 class Fetcher:
     @staticmethod
@@ -23,13 +28,12 @@ class Fetcher:
                     url_for_frontier = UrlExtractor.extract_url(page_body, url)
                     for j in url_for_frontier:
                         frontier.add_url(j)
-                    text_editor = TextEditor()
-                    page = Page(url, TextEditor.compile_title(page_body), text_editor.compile_description(page_body), text_editor.compile_tags(page_body))
-                    await EntryCreation.create_entry(page, db_session)
-                print(url + "Спаршено")
+                        text_editor = TextEditor()
+                        page = Page(url, TextEditor.compile_title(page_body),
+                        text_editor.compile_description(page_body), text_editor.compile_tags(page_body))
+                        await EntryCreation.create_entry(url, page, db_session)
             except Exception as e:
                 print(e)
-
 
 
 class UrlExtractor:
@@ -54,12 +58,3 @@ class UrlExtractor:
                 else:
                     absolute_url = url
                 yield absolute_url
-
-
-
-
-
-
-
-
-

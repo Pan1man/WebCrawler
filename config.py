@@ -7,3 +7,6 @@ DB_PORT = os.environ.get("DB_PORT")
 DB_USER = os.environ.get("DB_USER")
 DB_NAME = os.environ.get("DB_NAME")
 DB_PASS = os.environ.get("DB_PASS")
+
+SERVER_IP_HOME = os.environ['SERVER_IP_HOME']
+SERVER_IP_PHONE = os.environ["SERVER_IP_PHONE"]

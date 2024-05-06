@@ -1,15 +1,21 @@
-import nltk
+import html2text as html2text
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sqlalchemy import select
 
 from src.db.db import get_async_session
+from src.models.pages import Page
 from src.schemas.pages import PageBase
 
 from bs4 import BeautifulSoup
 
 from nltk.corpus import stopwords
+
+from sqlalchemy.orm import Session
+from db.db import engine
+from sqlalchemy.ext.asyncio import AsyncSession
 class TextEditor:
 
-    def compile_tags(self, text, n_keywords=5):
+    def compile_tags(self, text, n_keywords=10):
         stop_words = set(stopwords.words('russian'))
 
         extracted_text = self.extract_text(text)
@@ -27,12 +33,13 @@ class TextEditor:
 
     def extract_text(self, page_text):
         soup = BeautifulSoup(page_text, 'html.parser')
-        text = soup.get_text(strip=True)
+        text = html2text.html2text(soup.get_text())
         return text
 
     def compile_description(self, text):
         extracted_text = self.extract_text(text)
-        return "Какое то описание"
+        description = extracted_text[0:200]
+        return description
 
     @staticmethod
     def compile_title(page_text):
@@ -47,10 +54,18 @@ class TextEditor:
 
 class EntryCreation:
     @staticmethod
-    async def create_entry(page: PageBase, session: get_async_session):
+    async def create_entry(url, page: PageBase, db_session: AsyncSession):
         try:
-            session.add(page)
-            await session.commit()
+            existing_page = await db_session.execute(select(Page).filter_by(url=url))
+            existing_page = existing_page.scalar_one_or_none()
+
+            if existing_page is None:
+                db_session.add(page)
+                await db_session.commit()
+        except Exception as e:
+            await db_session.rollback()
+            raise e
         finally:
-            pass
+            await db_session.close()
+
 
