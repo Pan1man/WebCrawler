@@ -11,7 +11,8 @@
         <form action="/submit" method="post">
             <h2 class="text-2xl font-semibold mb-4">GOGOLE</h2>
             <label>
-                <input name="url" class="p-4 border rounded w-64 md:w-96" placeholder="Введите ссылку">
+                <input name="url" class="p-4 border rounded w-64 md:w-96" placeholder="Введите ссылку"
+       pattern="https?://.+" title="Пожалуйста, введите правильный URL-адрес, начиная с http:// или https://">
             </label>
             <br class="my-4">
             <button type="submit" class="p-4 bg-blue-500 text-white rounded mt-4">Отправить</button>

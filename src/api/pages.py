@@ -1,9 +1,10 @@
 import os
 
 from fastapi import APIRouter, Depends, Request, Form
-from sqlalchemy import select, insert
+from sqlalchemy import select, insert, func, String, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.templating import Jinja2Templates
+from typing_extensions import List, Union
 
 from src.db.db import get_async_session
 from src.models.pages import Page
@@ -63,7 +64,7 @@ async def end_parsing(session: AsyncSession = Depends(get_async_session)):
 
 
 @router.get("/pages")
-async def get_pages(session: AsyncSession = Depends(get_async_session)):
+async def get_all_pages(session: AsyncSession = Depends(get_async_session)):
     query = select(Page)
     pages = await session.execute(query)
     result = pages.scalars().all()
@@ -75,4 +76,36 @@ async def add_page(page: PageBase, session: AsyncSession = Depends(get_async_ses
     stmt = insert(Page).values(**page.dict())
     await session.execute(stmt)
     await session.commit()
+
+
+
+
+@router.get("/api/get_pages/{key_words}")
+async def get_pages(key_words: str, session: AsyncSession = Depends(get_async_session)):
+    key_words_list = key_words.split()
+    first_word_condition = [
+        func.split_part(Page.title, ' ', 1).ilike(f"{word}%") for word in key_words_list
+    ]
+
+    query = select(Page).filter(
+        or_(*first_word_condition),
+        func.array_length(Page.tags, 1) >= 3,
+    )
+
+
+    pages = await session.execute(query)
+    result = pages.scalars().all()
+
+
+    if not result:
+        query = select(Page).filter(
+            func.array_length(Page.tags, 1) >= 3,
+            *[
+                func.cast(Page.tags, String).ilike(f"%{word}%") for word in key_words_list
+            ]
+        )
+        pages = await session.execute(query)
+        result = pages.scalars().all()
+
+    return result
 
